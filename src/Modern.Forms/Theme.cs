@@ -16,8 +16,11 @@ namespace Modern.Forms
 
         static Theme ()
         {
-            SetBuiltInTheme (BuiltInTheme.Default);
-
+            SetBuiltInTheme (BuiltInTheme.Modern);
+/*
+Theme.UIFont = SKTypeface.FromFile("Assets/Fonts/Inter-Regular.ttf");
+Theme.UIFontBold = SKTypeface.FromFile("Assets/Fonts/Inter-Bold.ttf");
+*/
             values[nameof (UIFont)] = SKTypeface.FromFamilyName ("Segoe UI Emoji", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
             values[nameof (UIFontBold)] = SKTypeface.FromFamilyName ("Segoe UI Emoji", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
             values[nameof (FontSize)] = 14;
@@ -240,6 +243,61 @@ namespace Modern.Forms
 
             // TODO: BuiltInTheme.Default should detect the OS setting. Currently it just uses Light.
             switch (theme) {
+                case BuiltInTheme.Modern:
+    values[nameof(BackgroundColor)] = SKColor.Parse("#FFF8FAFC");
+
+    values[nameof(BorderLowColor)] = SKColor.Parse("#FFE2E8F0");
+    values[nameof(BorderMidColor)] = SKColor.Parse("#FFCBD5E1");
+    values[nameof(BorderHighColor)] = SKColor.Parse("#FF64748B");
+
+    values[nameof(ControlLowColor)] = SKColor.Parse("#FFFFFFFF");
+    values[nameof(ControlMidColor)] = SKColor.Parse("#FFF1F5F9");
+    values[nameof(ControlMidHighColor)] = SKColor.Parse("#FFE2E8F0");
+    values[nameof(ControlHighColor)] = SKColor.Parse("#FFCBD5E1");
+    values[nameof(ControlVeryHighColor)] = SKColor.Parse("#FF334155");
+
+    values[nameof(ControlHighlightLowColor)] = SKColor.Parse("#FFDBEAFE");
+    values[nameof(ControlHighlightMidColor)] = SKColor.Parse("#FFBFDBFE");
+    values[nameof(ControlHighlightHighColor)] = SKColor.Parse("#FF93C5FD");
+
+    values[nameof(ForegroundColor)] = SKColor.Parse("#FF0F172A");
+    values[nameof(ForegroundDisabledColor)] = SKColor.Parse("#FF94A3B8");
+    values[nameof(ForegroundColorOnAccent)] = SKColors.White;
+
+    values[nameof(AccentColor)] = SKColor.Parse("#FF3B82F6");
+    values[nameof(AccentColor2)] = SKColor.Parse("#FF06B6D4");
+
+    values[nameof(TextSelectionBackgroundColor)] = SKColor.Parse("#FFBFDBFE");
+    values[nameof(WarningHighlightColor)] = SKColor.Parse("#FFEF4444");
+    break;
+case BuiltInTheme.Metro:
+    values[nameof(BackgroundColor)] = SKColor.Parse("#FFF2F2F2");
+
+    values[nameof(BorderLowColor)] = SKColor.Parse("#FFDADADA");
+    values[nameof(BorderMidColor)] = SKColor.Parse("#FFB8B8B8");
+    values[nameof(BorderHighColor)] = SKColor.Parse("#FF767676");
+
+    values[nameof(ControlLowColor)] = SKColor.Parse("#FFFFFFFF");
+    values[nameof(ControlMidColor)] = SKColor.Parse("#FFF6F6F6");
+    values[nameof(ControlMidHighColor)] = SKColor.Parse("#FFE6E6E6");
+    values[nameof(ControlHighColor)] = SKColor.Parse("#FFCCCCCC");
+    values[nameof(ControlVeryHighColor)] = SKColor.Parse("#FF1F1F1F");
+
+    values[nameof(ControlHighlightLowColor)] = SKColor.Parse("#FFE5F3FF");
+    values[nameof(ControlHighlightMidColor)] = SKColor.Parse("#FFC7E0F4");
+    values[nameof(ControlHighlightHighColor)] = SKColor.Parse("#FF91C9F7");
+
+    values[nameof(ForegroundColor)] = SKColor.Parse("#FF1F1F1F");
+    values[nameof(ForegroundDisabledColor)] = SKColor.Parse("#FF8A8A8A");
+    values[nameof(ForegroundColorOnAccent)] = SKColors.White;
+
+    values[nameof(AccentColor)] = SKColor.Parse("#FF0078D7");
+    values[nameof(AccentColor2)] = SKColor.Parse("#FF00BCF2");
+
+    values[nameof(TextSelectionBackgroundColor)] = SKColor.Parse("#FFADD6FF");
+    values[nameof(WarningHighlightColor)] = SKColor.Parse("#FFE81123");
+    break;
+
                 case BuiltInTheme.Dark:
                     values[nameof (BackgroundColor)] = SKColor.Parse ("#FF282828");
                     values[nameof (BorderLowColor)] = SKColor.Parse ("#FF505050");

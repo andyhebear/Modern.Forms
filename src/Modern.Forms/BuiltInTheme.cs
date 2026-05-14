@@ -18,5 +18,15 @@ public enum BuiltInTheme
     /// <summary>
     /// Uses the "Dark" built-in theme.
     /// </summary>
-    Dark
+    Dark,
+    /// <summary>
+    /// Modern clean light theme, inspired by current SaaS / Tailwind style UI.
+    /// </summary>
+    Modern,
+
+    /// <summary>
+    /// Windows Metro style theme, flat, clean, blue-accented.
+    /// </summary>
+    Metro
 }
+
