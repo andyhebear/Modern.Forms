@@ -219,5 +219,10 @@ namespace Modern.Forms
         /// Gets or sets the text of the menu item.
         /// </summary>
         public string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets an arbitrary object value that can be used to store custom information about this menu item.
+        /// </summary>
+        public object? Tag { get; set; }
     }
 }
