@@ -38,7 +38,7 @@ Modern.Forms 是一个开源的跨平台 GUI 框架，是 Windows Forms (WinForm
 
 **相同点：**
 - 相似的控件命名（Button、Label、TextBox 等）
-- Dock/Anchor 布局系统
+- Dock/Anchor 布局系统,可指定适配AI生成布局
 - 事件驱动模型
 - `Application.Run()` 启动模式
 - `SuspendLayout()/ResumeLayout()` 布局事务
@@ -473,7 +473,8 @@ Form 不是 Control 的子类，而是通过 ControlAdapter 管理子控件。Ti
 
 
 ## 示例应用
-
+![Windows Form界面设计 Screenshot](https://github.com/andyhebear/Modern.Forms/blob/main/pictures/QQ_1778730461398.png "Windows Form界面设计 Screenshot")
+![Windows Form界面设计 Screenshot2](https://github.com/andyhebear/Modern.Forms/blob/main/pictures/QQ_1778730956775.png "Windows Form界面设计 Screenshot2")
 | 示例 | 说明 | 路径 |
 |------|------|------|
 | **ControlGallery** | 所有控件的展示画廊 | [`samples/ControlGallery`](samples/ControlGallery) |
