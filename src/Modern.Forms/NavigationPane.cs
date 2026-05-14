@@ -14,7 +14,7 @@ public class NavigationPane : Control
     public NavigationPane ()
     {
         Items = new NavigationPaneItemCollection (this);
-        Dock = DockStyle.Left;
+        Dock = DockStyle.None;
     }
 
     /// <inheritdoc/>
