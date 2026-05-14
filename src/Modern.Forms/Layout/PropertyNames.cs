@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -61,7 +61,7 @@ internal sealed class PropertyNames
     public const string PreferredSize = "PreferredSize";
     public const string Padding = "Padding";
     public const string Parent = "Parent";
-    //public const string RightToLeft = "RightToLeft";
+    public const string RightToLeft = "RightToLeft";
     //public const string RightToLeftLayout = "RightToLeftLayout";
     //public const string RowHeadersVisible = "RowHeadersVisible";
     //public const string RowHeadersWidth = "RowHeadersWidth";
