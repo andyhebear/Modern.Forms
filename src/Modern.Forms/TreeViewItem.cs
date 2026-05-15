@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using Modern.Forms.Renderers;
 using SkiaSharp;
 
@@ -12,6 +12,7 @@ namespace Modern.Forms
         private readonly TreeView? tree_view;
 
         private bool expanded;
+        private CheckState check_state;
         internal TreeViewItemCollection? items;
 
         /// <summary>
@@ -121,9 +122,15 @@ namespace Modern.Forms
 
             var renderer = RenderManager.GetRenderer<TreeViewRenderer> ();
 
+            if (tv.CheckBoxes) {
+                var checkbox_bounds = renderer!.GetCheckBoxBounds (tv, this);
+
+                if (!checkbox_bounds.IsEmpty && checkbox_bounds.Contains (location))
+                    return TreeViewItemElement.CheckBox;
+            }
+
             var glyph_bounds = renderer!.GetGlyphBounds (tv, this);
 
-            // Give the user a slightly more generous click target
             if (!glyph_bounds.IsEmpty)
                 glyph_bounds.Inflate (4, 4);
 
@@ -160,6 +167,27 @@ namespace Modern.Forms
                 foreach (var item in Items)
                     foreach (var child in item.GetVisibleItems ())
                         yield return child;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if the item is in the checked state.
+        /// </summary>
+        public bool Checked {
+            get => check_state != CheckState.Unchecked;
+            set => CheckState = value ? CheckState.Checked : CheckState.Unchecked;
+        }
+
+        /// <summary>
+        /// Gets or sets the check state of the item.
+        /// </summary>
+        public CheckState CheckState {
+            get => check_state;
+            set {
+                if (check_state != value) {
+                    check_state = value;
+                    Invalidate ();
+                }
+            }
         }
 
         /// <summary>
@@ -281,17 +309,15 @@ namespace Modern.Forms
             /// No element.
             /// </summary>
             None,
-
             /// <summary>
             /// The glyph (dropdown arrow) of the TreeViewItem.
             /// </summary>
             Glyph,
-
+            CheckBox,
             /// <summary>
             /// The image of the TreeViewItem.
             /// </summary>
             Image,
-
             /// <summary>
             /// The text of the TreeViewItem.
             /// </summary>

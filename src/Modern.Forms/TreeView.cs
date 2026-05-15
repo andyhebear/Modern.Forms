@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Globalization;
 using Modern.Forms.Renderers;
 using SkiaSharp;
@@ -16,10 +16,13 @@ namespace Modern.Forms
         private TreeViewItem selected_item;
         private bool show_dropdown_glyph = true;
         private bool show_item_images = true;
+        private bool checkboxes;
         private bool virtual_mode;
         private readonly VerticalScrollBar vscrollbar;
 
         private static readonly object s_drawNode = new object ();
+        private static readonly object s_beforeCheck = new object ();
+        private static readonly object s_afterCheck = new object ();
 
         /// <summary>
         /// Initializes a new instance of the TreeView class.
@@ -48,6 +51,35 @@ namespace Modern.Forms
         /// Raised before a node is expanded.
         /// </summary>
         public event EventHandler<EventArgs<TreeViewItem>>? BeforeExpand;
+
+        /// <summary>
+        /// Raised before a node's check state changes.
+        /// </summary>
+        public event EventHandler<TreeViewItemCancelEventArgs>? BeforeCheck {
+            add => Events.AddHandler (s_beforeCheck, value);
+            remove => Events.RemoveHandler (s_beforeCheck, value);
+        }
+
+        /// <summary>
+        /// Raised after a node's check state has changed.
+        /// </summary>
+        public event EventHandler<TreeViewItemEventArgs>? AfterCheck {
+            add => Events.AddHandler (s_afterCheck, value);
+            remove => Events.RemoveHandler (s_afterCheck, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether check boxes are displayed next to each node.
+        /// </summary>
+        public bool CheckBoxes {
+            get => checkboxes;
+            set {
+                if (checkboxes != value) {
+                    checkboxes = value;
+                    Invalidate ();
+                }
+            }
+        }
 
         /// <inheritdoc/>
         public new static readonly TreeViewControlStyle DefaultStyle = new TreeViewControlStyle (Control.DefaultStyle,
@@ -184,6 +216,34 @@ namespace Modern.Forms
         /// </summary>
         public void OnBeforeExpand (EventArgs<TreeViewItem> e) => BeforeExpand?.Invoke (this, e);
 
+        /// <summary>
+        /// Raises the BeforeCheck event.
+        /// </summary>
+        protected virtual void OnBeforeCheck (TreeViewItemCancelEventArgs e) => (Events[s_beforeCheck] as EventHandler<TreeViewItemCancelEventArgs>)?.Invoke (this, e);
+
+        /// <summary>
+        /// Raises the AfterCheck event.
+        /// </summary>
+        protected virtual void OnAfterCheck (TreeViewItemEventArgs e) => (Events[s_afterCheck] as EventHandler<TreeViewItemEventArgs>)?.Invoke (this, e);
+
+        internal void ToggleItemCheckState (TreeViewItem item)
+        {
+            if (!CheckBoxes)
+                return;
+
+            var new_state = item.Checked ? CheckState.Unchecked : CheckState.Checked;
+
+            var cancel_args = new TreeViewItemCancelEventArgs (item, new_state);
+            OnBeforeCheck (cancel_args);
+
+            if (cancel_args.Cancel)
+                return;
+
+            item.CheckState = new_state;
+
+            OnAfterCheck (new TreeViewItemEventArgs (item));
+        }
+
         /// <inheritdoc/>
         protected override void OnClick (MouseEventArgs e)
         {
@@ -210,6 +270,11 @@ namespace Modern.Forms
             base.OnClick (e);
 
             var element = item.GetElementAtLocation (e.Location);
+
+            if (element == TreeViewItem.TreeViewItemElement.CheckBox) {
+                ToggleItemCheckState (item);
+                return;
+            }
 
             if (element == TreeViewItem.TreeViewItemElement.Glyph)
                 item.Expanded = !item.Expanded;
@@ -294,7 +359,7 @@ namespace Modern.Forms
                 if (all.Count == 0)
                     return;
 
-                SelectedItem = all.First ();
+                SelectedItem = all[0];
 
                 e.Handled = true;
                 return;
@@ -336,8 +401,8 @@ namespace Modern.Forms
             if (e.KeyCode == Keys.Right) {
                 selected_item.Expand ();
 
-                if (selected_item.HasChildren)
-                    SelectedItem = selected_item.Items.First ();
+                if (selected_item.HasChildren && selected_item.Items.Count > 0)
+                    SelectedItem = selected_item.Items[0];
 
                 e.Handled = true;
                 return;
@@ -359,6 +424,13 @@ namespace Modern.Forms
                 return;
             }
 
+            // Space toggles checkbox if CheckBoxes is enabled
+            if (e.KeyCode == Keys.Space && CheckBoxes && selected_item != root_item) {
+                ToggleItemCheckState (selected_item);
+                e.Handled = true;
+                return;
+            }
+
             // First letter toggles between all expanded nodes
             if (char.IsLetterOrDigit ((char)e.KeyCode)) {
                 var item = FindString (((char)e.KeyCode).ToString (), selected_item);
@@ -370,7 +442,6 @@ namespace Modern.Forms
                 }
             }
 
-            // TODO: If checkboxes, space toggles checkbox
             base.OnKeyDown (e);
         }
 
