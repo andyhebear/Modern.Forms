@@ -77,7 +77,8 @@ namespace Modern.Forms
                         Size = new Size (Width, 102)
                     };
 
-                    popup.Controls.Add (popup_listbox);
+                    if (!popup.Controls.Contains (popup_listbox))
+                        popup.Controls.Add (popup_listbox);
 
                     popup.Show (this, 1, Height);
 
