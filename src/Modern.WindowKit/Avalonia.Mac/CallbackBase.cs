@@ -3,7 +3,6 @@ using System.Runtime.ExceptionServices;
 using Modern.WindowKit.MicroCom;
 using Modern.WindowKit.Platform;
 using Modern.WindowKit.Threading;
-using Modern.WindowKit.MicroCom;
 
 namespace Modern.WindowKit.Native
 {
