@@ -23,8 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" />
-    <PackageReference Include="SharpGenTools.Sdk" Version="1.2.0" PrivateAssets="all" />
+    <PackageReference Include="SharpGen.Runtime.COM" />
+    <PackageReference Include="SharpGenTools.Sdk" PrivateAssets="all" />
     <SharpGenMapping Include="Mappings.xml" />
   </ItemGroup>
   
