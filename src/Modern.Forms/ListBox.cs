@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
 using Modern.Forms.Renderers;
@@ -337,15 +337,30 @@ namespace Modern.Forms
                     break;
 
                 case SelectionMode.MultiExtended:
-                    // TODO: Shift
+                    if (e.Shift) {
+                        var anchor = Items.FocusedIndex >= 0 ? Items.FocusedIndex : 0;
 
-                    // When Control is held we treat this like MultiSimple
+                        if (SelectedIndex == -1)
+                            SelectedIndex = anchor;
+
+                        var (start, end) = Items.GetSingleContiguousSelection ();
+
+                        if (start == -1) {
+                            for (var i = Math.Min (anchor, index); i <= Math.Max (anchor, index); i++)
+                                Items.AddSelectedIndex (i, false);
+                        } else {
+                            Items.SelectedIndexes.Clear ();
+                            for (var i = Math.Min (anchor, index); i <= Math.Max (anchor, index); i++)
+                                Items.AddSelectedIndex (i, false);
+                        }
+                        break;
+                    }
+
                     if (e.Control) {
                         Items.ToggleSelectedIndex (index);
                         break;
                     }
 
-                    // Else we treat this like SelectionMode.One
                     SelectedIndex = index;
 
                     break;
