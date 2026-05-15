@@ -11,8 +11,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AvnComIdl Include="../avn.idl" OutputFile="Mac/Interop.Generated.cs" />
     <AvnComIdl Include="../win32.idl" OutputFile="Windows/Windows.Interop.Generated.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\Modern.Forms.Mac.Backend\lib\libAvaloniaNative.dylib" Link="libAvaloniaNative.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AssemblyInfo.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -21,12 +34,4 @@
   </ItemGroup>
 
   <Import Project="../../build/MicroCom.targets" />
-
-  <ItemGroup>
-    <Content Include="../../lib/libAvaloniaNative.dylib">
-      <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
-      <Pack>true</Pack>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 </Project>
