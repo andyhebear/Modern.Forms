@@ -1,10 +1,7 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 
 namespace Modern.Forms
 {
-    /// <summary>
-    /// Defines the border style of a control or form.
-    /// </summary>
     public class BorderStyle
     {
         private readonly BorderStyle? _parent;
@@ -12,9 +9,8 @@ namespace Modern.Forms
         private SKColor? color;
         private int? width;
 
-        /// <summary>
-        /// Initializes a new instance of the BorderStyle class.
-        /// </summary>
+        public event EventHandler? Changed;
+
         public BorderStyle (BorderStyle? parent)
         {
             _parent = parent;
@@ -23,16 +19,15 @@ namespace Modern.Forms
             Top = new BorderSideStyle (_parent?.Top);
             Right = new BorderSideStyle (_parent?.Right);
             Bottom = new BorderSideStyle (_parent?.Bottom);
+
+            Left.Changed += (s, e) => OnChanged ();
+            Top.Changed += (s, e) => OnChanged ();
+            Right.Changed += (s, e) => OnChanged ();
+            Bottom.Changed += (s, e) => OnChanged ();
         }
 
-        /// <summary>
-        /// Gets the styles for the bottom border.
-        /// </summary>
         public BorderSideStyle Bottom { get; }
 
-        /// <summary>
-        /// Gets or sets the color of all sides of the border.
-        /// </summary>
         public SKColor? Color {
             get => color;
             set {
@@ -44,86 +39,63 @@ namespace Modern.Forms
             }
         }
 
-        /// <summary>
-        /// Gets the computed radius for all border corners.
-        /// </summary>
         public SKColor GetColor () => Color ?? _parent?.GetColor () ?? SKColor.Empty;
-
-        /// <summary>
-        /// Gets the computed radius for all border corners.
-        /// </summary>
         public int GetRadius () => Radius ?? _parent?.GetRadius () ?? 0;
-
-        /// <summary>
-        /// Gets the computed width for all border.
-        /// </summary>
         public int GetWidth () => Width ?? _parent?.GetWidth () ?? 0;
 
-        /// <summary>
-        /// Gets the styles for the left border.
-        /// </summary>
         public BorderSideStyle Left { get; }
 
-        /// <summary>
-        /// Gets or sets the radius for all border corners.
-        /// </summary>
-        public int? Radius { get; set; }
+        int? _radius;
+        public int? Radius {
+            get => _radius;
+            set { if (_radius != value) { _radius = value; OnChanged (); } }
+        }
 
-        /// <summary>
-        /// Gets the styles for the right border.
-        /// </summary>
         public BorderSideStyle Right { get; }
 
-        /// <summary>
-        /// Gets the styles for the top border.
-        /// </summary>
         public BorderSideStyle Top { get; }
 
-        /// <summary>
-        /// Gets or sets the width of all sides of the border.
-        /// </summary>
         public int? Width {
             get => width;
             set {
-                width = value;
-                Left.Width = value;
-                Right.Width = value;
-                Top.Width = value;
-                Bottom.Width = value;
+                if (width != value) {
+                    width = value;
+                    Left.Width = value;
+                    Right.Width = value;
+                    Top.Width = value;
+                    Bottom.Width = value;
+                    OnChanged ();
+                }
             }
         }
+
+        protected virtual void OnChanged () => Changed?.Invoke (this, EventArgs.Empty);
     }
 
-    /// <summary>
-    /// Defines the border style for a single side of a control or form.
-    /// </summary>
     public class BorderSideStyle
     {
         private readonly BorderSideStyle? _parent;
 
-        /// <summary>
-        /// Initializes a new instance of the BorderSideStyle class.
-        /// </summary>
+        public event EventHandler? Changed;
+
         public BorderSideStyle (BorderSideStyle? parent) => _parent = parent;
 
-        /// <summary>
-        /// Gets or sets the color of this side of the border.
-        /// </summary>
-        public SKColor? Color { get; set; }
+        SKColor? _color;
+        public SKColor? Color {
+            get => _color;
+            set { if (_color != value) { _color = value; OnChanged (); } }
+        }
 
-        /// <summary>
-        /// Gets the computed color of this side of the border.
-        /// </summary>
         public SKColor GetColor () => Color ?? _parent?.GetColor () ?? Theme.BorderLowColor;
 
-        /// <summary>
-        /// Gets or sets the width of this side of the border.
-        /// </summary>
-        public int? Width { get; set; }
+        int? _width;
+        public int? Width {
+            get => _width;
+            set { if (_width != value) { _width = value; OnChanged (); } }
+        }
 
-        /// <summary>
-        /// Gets the computed width of this side of the border.
-        /// </summary>
         public int GetWidth () => Width ?? _parent?.GetWidth () ?? 0;
+
+        protected virtual void OnChanged () => Changed?.Invoke (this, EventArgs.Empty);
     }
 }
