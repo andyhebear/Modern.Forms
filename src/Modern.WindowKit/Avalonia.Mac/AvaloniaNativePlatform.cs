@@ -10,7 +10,6 @@ using Modern.WindowKit.Platform;
 //using Modern.WindowKit.Rendering;
 //using Modern.WindowKit.Rendering.Composition;
 using Modern.WindowKit.Threading;
-using Modern.WindowKit.MicroCom;
 #nullable enable
 
 namespace Modern.WindowKit.Native
