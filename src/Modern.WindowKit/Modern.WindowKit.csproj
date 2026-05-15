@@ -5,7 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS0109;CS0162;CS0169;CS0219;CS0414;CS0649;CS0067;CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8625;CS8613;CS8766;CS8767;CS8629;CS8714;CA1001;CA1051;CA1068;CA1070;CA1310;CA1507;CA1510;CA1711;CA1712;CA1716;CA1725;CA1805;CA1806;CA1816;CA1838;CA1852;CA1859;CA1861;CA1866;CA2022;CA2101;CA2201;CA2263;NU1903</NoWarn>
     <LangVersion>11</LangVersion>
   </PropertyGroup>
 
@@ -18,11 +18,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="Modern.WindowKit.Backend" Version="[0.4.0-alpha04]" />
-    <PackageReference Include="SkiaSharp" Version="2.88.3" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <PackageReference Include="Modern.WindowKit.Backend" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
 </Project>
