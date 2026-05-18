@@ -4,22 +4,31 @@ using Modern.WindowKit.Platform;
 
 namespace Modern.Forms
 {
-    /// <summary>
-    /// Represents a popup window used for things like ComboBoxes and context menus.
-    /// </summary>
     public class PopupWindow : WindowBase
     {
         private readonly Form parent_form;
+        private readonly EventHandler deactivated_handler;
 
-        /// <summary>
-        /// Initializes a new instance of the PopupWindow class.
-        /// </summary>
-        public PopupWindow (Form parentForm) : base (parentForm.window.CreatePopup ()!) // NRT - This would only be null if we were using WindowKit overlaw popups
+        public PopupWindow (Form parentForm) : base (parentForm.window.CreatePopup ()!)
         {
             StartPosition = FormStartPosition.Manual;
 
             parent_form = parentForm;
-            parent_form.Deactivated += (o, e) => Hide ();
+            deactivated_handler = (o, e) => Hide ();
+            parent_form.Deactivated += deactivated_handler;
+        }
+
+        public override void Hide ()
+        {
+            base.Hide ();
+            if (Application.ActivePopupWindow == this)
+                Application.ActivePopupWindow = null;
+        }
+
+        public override void Close ()
+        {
+            parent_form.Deactivated -= deactivated_handler;
+            base.Close ();
         }
 
         /// <inheritdoc/>
@@ -28,7 +37,7 @@ namespace Modern.Forms
         /// <summary>
         /// Gets the default style for all controls of this type.
         /// </summary>
-        public new static ControlStyle DefaultStyle = new ControlStyle (Control.DefaultStyle,
+        public  static ControlStyle DefaultStylePopupWindow = new ControlStyle (Control.DefaultStyle,
             (style) => {
                 style.BackgroundColor = Theme.ControlMidColor;
             });
@@ -75,11 +84,14 @@ namespace Modern.Forms
         /// <summary>
         /// Gets or sets the unscaled size of the window.
         /// </summary>
+        /// <summary>
+        /// Gets or sets the unscaled size of the window.
+        /// </summary>
         public new Size Size { get; set; }
 
         /// <summary>
         /// Gets the ControlStyle properties for this instance of the Control.
         /// </summary>
-        public override ControlStyle Style { get; } = new ControlStyle (DefaultStyle);
+        public override ControlStyle Style { get; } = new ControlStyle (DefaultStylePopupWindow);
     }
 }
