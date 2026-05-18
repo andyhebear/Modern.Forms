@@ -10,20 +10,21 @@ namespace Modern.Forms
     /// <summary>
     /// Represents a top-level window to display to the user.
     /// </summary>
-    public class Form : WindowBase, ICloseable
+    public class Form : WindowBase, ICloseable, IContainerControl
     {
-        // If the border is only 1 pixel it's too hard to resize, so we may steal some pixels from the client area
         private const int MINIMUM_RESIZE_PIXELS = 4;
 
-        private IWindowImpl? dialog_parent;
-        private DialogResult dialog_result = DialogResult.None;
-        private TaskCompletionSource<DialogResult>? dialog_task;
+        protected IWindowImpl? dialog_parent;
+        protected DialogResult dialog_result = DialogResult.None;
+        protected TaskCompletionSource<DialogResult>? dialog_task;
+        private Control? active_control;
         private System.Drawing.Size minimum_size;
         private System.Drawing.Size maximum_size;
 
         private bool show_focus_cues;
         private string text = string.Empty;
         private bool use_system_decorations;
+        private int layout_suspend_count;
 
         /// <summary>
         /// Initializes a new instance of the Form class.
@@ -45,8 +46,12 @@ namespace Modern.Forms
             };
 
             Window.Resize (new Size (DefaultSize.Width, DefaultSize.Height));
+            InitializeComponent();            
         }
-
+        /// <summary>
+        /// 初始化窗口控件
+        /// </summary>
+        protected virtual void InitializeComponent () { }
         /// <summary>
         /// Gets or sets whether the form can be maximized.
         /// </summary>
@@ -99,7 +104,7 @@ namespace Modern.Forms
             if (dialog_task is not null) {
                 var task = dialog_task;
                 dialog_task = null;
-                task.SetResult (dialog_result);
+                task.TrySetResult (dialog_result);
             }
         }
 
@@ -356,9 +361,9 @@ namespace Modern.Forms
         /// <summary>
         /// Displays the window to the user modally, preventing interaction with other windows until closed.
         /// </summary>
-        public Task<DialogResult> ShowDialog (Form parent)
+        public virtual Task<DialogResult> ShowDialog (Form parent)
         {
-            dialog_task = new TaskCompletionSource<DialogResult> ();
+            dialog_task = new TaskCompletionSource<DialogResult> (TaskCreationOptions.RunContinuationsAsynchronously);
 
             // If the DialogResult has already been set we don't show the dialog
             if (dialog_result != DialogResult.None) {
@@ -415,7 +420,15 @@ namespace Modern.Forms
         /// <summary>
         /// Gets the title bar for the form.
         /// </summary>
-        public FormTitleBar TitleBar { get; }
+        public FormTitleBar TitleBar { get;private set; }
+
+        /// <summary>
+        /// 正序 Dock 布局标志。设为 true 后(适用于 AI 代码生成或其他按自然顺序构建 UI 的场景)，Controls.Add 的添加顺序即为 Dock 布局顺序
+        /// （第一个添加的 Dock.Top 在最上方，第一个添加的 Dock.Bottom 在最下方）。
+        /// 默认为 false（WinForms 传统倒序 z-order 布局）。
+        /// 适用于 AI 代码生成或其他按自然顺序构建 UI 的场景。
+        /// </summary>
+        public bool UseForwardDockOrder { get; set; }
 
         /// <summary>
         /// Gets or sets whether the form should use the operating system's title bar and decorations,
@@ -439,6 +452,17 @@ namespace Modern.Forms
         }
 
         /// <summary>
+        /// 获取控件可用的显示区域。
+        /// TitleBar 的高度由布局引擎（DockAndAnchorLayout）统一处理，
+        /// 此处返回完整客户区域，避免与布局引擎双重减去 TitleBar 高度。
+        /// </summary>
+        public override System.Drawing.Rectangle DisplayRectangle {
+            get {
+                return base.DisplayRectangle;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the state of the form (normal/minimized/maximized).
         /// </summary>
         public FormWindowState WindowState {
@@ -447,6 +471,59 @@ namespace Modern.Forms
         }
 
         private IWindowImpl Window => (IWindowImpl)window;
+
+        /// <summary>
+        /// Suspends the layout logic for the form.
+        /// </summary>
+        public void SuspendLayout ()
+        {
+            layout_suspend_count++;
+        }
+
+        /// <summary>
+        /// Resumes the layout logic for the form.
+        /// </summary>
+        public void ResumeLayout (bool performLayout = true)
+        {
+            if (layout_suspend_count > 0) {
+                layout_suspend_count--;
+
+                if (layout_suspend_count == 0 && performLayout) {
+                    PerformLayout ();
+                }
+            }
+
+            if (!performLayout) {
+                for (var i = 0; i < Controls.Count; i++) {
+                    var child = Controls[i];
+                    child.LayoutEngine.InitLayout (child, BoundsSpecified.All);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Forces the form to apply layout logic to child controls.
+        /// </summary>
+        public void PerformLayout ()
+        {
+            if (layout_suspend_count > 0)
+                return;
+
+            layout_suspend_count = 1;
+            try {
+                foreach (Control child in Controls) {
+                    if (child.Visible || child is FormTitleBar)
+                        child.PerformLayout ();
+                }
+            } finally {
+                layout_suspend_count = 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether the layout is currently suspended.
+        /// </summary>
+        public bool IsLayoutSuspended => layout_suspend_count > 0;
 
         private enum WindowElement
         {
@@ -459,6 +536,27 @@ namespace Modern.Forms
             TopRightCorner,
             BottomLeftCorner,
             BottomRightCorner
+        }
+
+        Control? IContainerControl.ActiveControl {
+            get => active_control;
+            set {
+                if (active_control != value) {
+                    if (value is not null && !Controls.Contains (value))
+                        throw new ArgumentException ("Control is not a child of this container.");
+
+                    active_control = value;
+                }
+            }
+        }
+
+        bool IContainerControl.ActivateControl (Control active)
+        {
+            if (!Controls.Contains (active))
+                return false;
+
+            ((IContainerControl)this).ActiveControl = active;
+            return true;
         }
     }
 }
