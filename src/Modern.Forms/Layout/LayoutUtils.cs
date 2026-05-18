@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -236,13 +236,11 @@ internal sealed partial class LayoutUtils
             return false;
         }
 
-        if (rect1.Y <= rect2.Y && rect1.Y + rect1.Width >= rect2.Y + rect2.Width) {
-            //rect 1 contains rect 2 vertically
+        if (rect1.Y <= rect2.Y && rect1.Y + rect1.Height >= rect2.Y + rect2.Height) {
             return true;
         }
 
-        if (rect2.Y <= rect1.Y && rect2.Y + rect2.Width >= rect1.Y + rect1.Width) {
-            //rect 2 contains rect 1 vertically
+        if (rect2.Y <= rect1.Y && rect2.Y + rect2.Height >= rect1.Y + rect1.Height) {
             return true;
         }
 
