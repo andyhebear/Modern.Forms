@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -1041,9 +1041,8 @@ internal partial class TableLayout : LayoutEngine
         var isContainerRTL = false;
         var displayRect = Rectangle.Truncate (displayRectF);
 
-        if (containerInfo.Container is Control) {
-            var control = containerInfo.Container as Control;
-            //isContainerRTL = control.RightToLeft == RightToLeft.Yes;  TODO: RTL
+        if (containerInfo.Container is Control control) {
+            isContainerRTL = control.RightToLeft == RightToLeft.Yes;
         }
 
         var childrenInfo = containerInfo.ChildrenInfo;
@@ -1155,8 +1154,8 @@ internal partial class TableLayout : LayoutEngine
             EnsureRowAndColumnAssignments (container, containerInfo, /* doNotCache = */ true);
         }
 
-        for (var i = 0; i < children.Count (); i++) {
-            var layoutInfo = GetLayoutInfo (children.ElementAt (i));
+        for (var i = 0; i < children.Count; i++) {
+            var layoutInfo = GetLayoutInfo (children[i]);
             //the row and column specified is within the region enclosed by the element.
             if (layoutInfo.ColumnStart <= column && (layoutInfo.ColumnStart + layoutInfo.ColumnSpan - 1) >= column &&
                 layoutInfo.RowStart <= row && (layoutInfo.RowStart + layoutInfo.RowSpan - 1) >= row) {
