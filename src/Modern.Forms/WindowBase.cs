@@ -123,7 +123,7 @@ namespace Modern.Forms
         /// <summary>
         /// Gets the unscaled bounds of the form not including borders.
         /// </summary>
-        public System.Drawing.Rectangle DisplayRectangle => new System.Drawing.Rectangle (CurrentStyle.Border.Left.GetWidth (), CurrentStyle.Border.Top.GetWidth (), (int)window.ClientSize.Width - CurrentStyle.Border.Right.GetWidth () - CurrentStyle.Border.Left.GetWidth (), (int)window.ClientSize.Height - CurrentStyle.Border.Top.GetWidth () - CurrentStyle.Border.Bottom.GetWidth ());
+        public virtual System.Drawing.Rectangle DisplayRectangle => new System.Drawing.Rectangle (CurrentStyle.Border.Left.GetWidth (), CurrentStyle.Border.Top.GetWidth (), (int)window.ClientSize.Width - CurrentStyle.Border.Right.GetWidth () - CurrentStyle.Border.Left.GetWidth (), (int)window.ClientSize.Height - CurrentStyle.Border.Top.GetWidth () - CurrentStyle.Border.Bottom.GetWidth ());
 
         internal virtual bool HandleMouseDown (int x, int y)
         {
@@ -139,7 +139,7 @@ namespace Modern.Forms
         /// <summary>
         /// Hides the window without destroying it.
         /// </summary>
-        public void Hide ()
+        public virtual void Hide ()
         {
             Visible = false;
             window.Hide ();
@@ -287,7 +287,10 @@ namespace Modern.Forms
             if (!shown)
                 return;
 
-            var skia_framebuffer = window.Surfaces.OfType<IFramebufferPlatformSurface> ().First ();
+            var skia_framebuffer = window.Surfaces.OfType<IFramebufferPlatformSurface> ().FirstOrDefault ();
+
+            if (skia_framebuffer is null)
+                return;
 
             using var framebuffer = skia_framebuffer.Lock ();
 
@@ -344,13 +347,17 @@ namespace Modern.Forms
 
         private void OnResize (Size size, WindowResizeReason reason)
         {
-            adapter.SetBounds (DisplayRectangle.Left, DisplayRectangle.Top, Size.Width, Size.Height);
+            var displayRect = DisplayRectangle;
+            adapter.SetBounds (0, 0, displayRect.Width, displayRect.Height);
         }
 
         /// <summary>
         /// Raises the Shown event.
         /// </summary>
-        protected virtual void OnShown (EventArgs e) => Shown?.Invoke (this, e);
+        protected virtual void OnShown (EventArgs e) { 
+            Shown?.Invoke (this, e);
+            this.Invalidate ();
+        }
 
         private void OnVisibleChanged (EventArgs e)
         {
@@ -424,21 +431,23 @@ namespace Modern.Forms
         /// <summary>
         /// Displays the window to the user.
         /// </summary>
-        public void Show ()
+        public virtual void Show ()
         {
             Visible = true;
             OnVisibleChanged (EventArgs.Empty);
 
             SetWindowStartupLocation ();
+
+            if (!shown)
+                shown = true;
+
             window.Show (true, false);
 
             if (this is Form f)
                 Application.OpenForms.Add (f);
 
-            if (!shown) {
-                shown = true;
+            if (shown)
                 OnShown (EventArgs.Empty);
-            }
         }
 
         internal void ShowDialog (IWindowImpl parent)
@@ -448,15 +457,17 @@ namespace Modern.Forms
 
             SetWindowStartupLocation (parent);
             parent.SetEnabled (false);
+
+            if (!shown)
+                shown = true;
+
             window.Show (true, true);
 
             if (this is Form f)
                 Application.OpenForms.Add (f);
 
-            if (!shown) {
-                shown = true;
+            if (shown)
                 OnShown (EventArgs.Empty);
-            }
         }
 
         /// <summary>
@@ -467,7 +478,7 @@ namespace Modern.Forms
         /// <summary>
         /// Gets or sets the unscaled size of the window.
         /// </summary>
-        public System.Drawing.Size Size {
+        public  System.Drawing.Size Size {
             get => new System.Drawing.Size ((int)window.ClientSize.Width, (int)window.ClientSize.Height);
         }
 
