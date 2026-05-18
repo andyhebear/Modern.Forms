@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -42,6 +42,7 @@ public partial class Control
     private static readonly object s_tabStopChangedEvent = new object ();
     private static readonly object s_textChangedEvent = new object ();
     private static readonly object s_visibleChangedEvent = new object ();
+    private static readonly object s_rightToLeftChangedEvent = new object ();
 
     /// <summary>
     /// Raised when the AutoSize property is changed.
