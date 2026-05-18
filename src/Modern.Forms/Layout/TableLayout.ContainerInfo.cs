@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -201,13 +201,13 @@ internal partial class TableLayout
                     _minRows = 0;
 
                     var children = Container.Children;
-                    var childInfo = new LayoutInfo[children.Count ()];
+                    var childInfo = new LayoutInfo[children.Count];
                     var nonParticipatingElements = 0;
                     var index = 0;
 
-                    for (var i = 0; i < children.Count (); i++) {
-                        IArrangedElement element = children.ElementAt (i);
-                        if (!element.ParticipatesInLayout) {
+                    for (var i = 0; i < children.Count; i++) {
+                        var element = children[i];
+                        if (!((IArrangedElement)element).ParticipatesInLayout) {
                             // If the element does not participate in layout (i.e., Visible = false), we
                             // exclude it from the childrenInfos list and it is ignored by the engine.
                             nonParticipatingElements++;
