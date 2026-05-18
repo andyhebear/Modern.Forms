@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -72,13 +72,13 @@ internal partial class FlowLayout : LayoutEngine
             displayRect.Width = int.MaxValue - displayRect.X;
         }
 
-        for (var i = 0; i < container.Children.Count ();) {
+        for (var i = 0; i < container.Children.Count;) {
             var measureBounds = new Rectangle (displayRect.X, displayRect.Y, displayRect.Width, displayRect.Height - layoutSize.Height);
             var rowSize = MeasureRow (containerProxy, elementProxy, i, measureBounds, out var breakIndex);
 
             // if we are not wrapping contents, then the breakIndex (as set in MeasureRow)
             // should be equal to the count of child items in the container.
-            Debug.Assert (wrapContents == true || breakIndex == container.Children.Count (),
+            Debug.Assert (wrapContents == true || breakIndex == container.Children.Count,
                 "We should not be trying to break the row if we are not wrapping contents.");
 
             if (!measureOnly) {
@@ -116,7 +116,7 @@ internal partial class FlowLayout : LayoutEngine
     /// </summary>
     private static Size MeasureRow (ContainerProxy containerProxy, ElementProxy elementProxy, int startIndex, Rectangle displayRectangle, out int breakIndex)
     {
-        return TryCalculatePreferredSizeRow (containerProxy, elementProxy, startIndex, endIndex: containerProxy.Container.Children.Count (), rowBounds: displayRectangle, breakIndex: out breakIndex, measureOnly: true);
+        return TryCalculatePreferredSizeRow (containerProxy, elementProxy, startIndex, endIndex: containerProxy.Container.Children.Count, rowBounds: displayRectangle, breakIndex: out breakIndex, measureOnly: true);
     }
 
     /// <summary>
