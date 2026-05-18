@@ -1,12 +1,8 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
 namespace Modern.Forms
 {
-    // TODO: Update selected indexes when adding/removing items
-    /// <summary>
-    /// Represents a collection of items for ListBox.
-    /// </summary>
     public class ListBoxItemCollection : ObservableCollection<object>
     {
         private readonly ListBox owner;
@@ -18,9 +14,6 @@ namespace Modern.Forms
             this.owner = owner;
         }
 
-        /// <summary>
-        /// Adds a collection of items to the collection.
-        /// </summary>
         public void AddRange (params object[] items)
         {
             owner.SuspendLayout ();
@@ -62,10 +55,15 @@ namespace Modern.Forms
             if (SelectedIndexes.Count == 1)
                 return (SelectedIndex, SelectedIndex);
 
-            var indexes = SelectedIndexes.OrderBy (p => p).ToList ();
+            var min = SelectedIndexes[0];
+            var max = SelectedIndexes[0];
+            for (var i = 1; i < SelectedIndexes.Count; i++) {
+                if (SelectedIndexes[i] < min) min = SelectedIndexes[i];
+                if (SelectedIndexes[i] > max) max = SelectedIndexes[i];
+            }
 
-            if (indexes.Last () - indexes.First () + 1 == indexes.Count)
-                return (indexes.First (), indexes.Last ());
+            if (max - min + 1 == SelectedIndexes.Count)
+                return (min, max);
 
             return (-1, -1);
         }
@@ -80,7 +78,42 @@ namespace Modern.Forms
             }
         }
 
-        /// <inheritdoc/>
+        protected override void InsertItem (int index, object item)
+        {
+            base.InsertItem (index, item);
+
+            for (var i = 0; i < SelectedIndexes.Count; i++) {
+                if (SelectedIndexes[i] >= index)
+                    SelectedIndexes[i]++;
+            }
+
+            if (focused_index >= index)
+                focused_index++;
+        }
+
+        protected override void RemoveItem (int index)
+        {
+            SelectedIndexes.Remove (index);
+
+            for (var i = 0; i < SelectedIndexes.Count; i++) {
+                if (SelectedIndexes[i] > index)
+                    SelectedIndexes[i]--;
+            }
+
+            if (focused_index > index || focused_index >= Count - 1)
+                focused_index = Math.Max (0, focused_index - 1);
+
+            base.RemoveItem (index);
+        }
+
+        protected override void ClearItems ()
+        {
+            SelectedIndexes.Clear ();
+            focused_index = 0;
+
+            base.ClearItems ();
+        }
+
         protected override void OnCollectionChanged (NotifyCollectionChangedEventArgs e)
         {
             base.OnCollectionChanged (e);
@@ -126,7 +159,12 @@ namespace Modern.Forms
             }
         }
 
-        internal IEnumerable<object> SelectedItems => SelectedIndexes.Select (i => this[i]);
+        internal IEnumerable<object> SelectedItems {
+            get {
+                for (var i = 0; i < SelectedIndexes.Count; i++)
+                    yield return this[SelectedIndexes[i]];
+            }
+        }
 
         internal void ToggleSelectedIndex (int index)
         {
