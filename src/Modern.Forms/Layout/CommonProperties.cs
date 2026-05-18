@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -323,8 +323,8 @@ internal sealed partial class CommonProperties
         // PERFNOTE: This is more efficient than using Foreach.  Foreach
         // forces the creation of an array subset enum each time we
         // enumerate
-        for (var i = 0; i < controlsCollection.Count (); i++)
-            xClearAllPreferredSizeCaches (controlsCollection.ElementAt (i));
+        for (var i = 0; i < controlsCollection.Count; i++)
+            xClearAllPreferredSizeCaches (controlsCollection[i]);
     }
 
     ///  xGetPreferredSizeCache
