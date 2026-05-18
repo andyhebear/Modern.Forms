@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 
 namespace Modern.Forms.Renderers
 {
@@ -7,18 +7,10 @@ namespace Modern.Forms.Renderers
     /// </summary>
     public class TreeViewRenderer : Renderer<TreeView>
     {
-        /// <summary>
-        /// Size of each indent level.
-        /// </summary>
         protected const int INDENT_SIZE = 18;
-        /// <summary>
-        /// Size of item image.
-        /// </summary>
         protected const int IMAGE_SIZE = 16;
-        /// <summary>
-        /// Size of dropdown glyph.
-        /// </summary>
         protected const int GLYPH_SIZE = 10;
+        protected const int CHECKBOX_SIZE = 13;
 
         /// <inheritdoc/>
         protected override void Render (TreeView control, PaintEventArgs e)
@@ -56,6 +48,11 @@ namespace Modern.Forms.Renderers
                     return;
             }
 
+            if (control.CheckBoxes) {
+                var checkbox_bounds = GetCheckBoxBounds (control, item);
+                ControlPaint.DrawCheckBox (e, checkbox_bounds, item.CheckState, !control.Enabled);
+            }
+
             if (control.ShowDropdownGlyph == true) {
                 var glyph_bounds = GetGlyphBounds (control, item);
 
@@ -85,12 +82,28 @@ namespace Modern.Forms.Renderers
             if (!control.ShowDropdownGlyph)
                 return Rectangle.Empty;
 
-            var glyph_area = new Rectangle (GetIndentStart (control, item), item.Bounds.Top, control.LogicalToDeviceUnits (GLYPH_SIZE), item.Bounds.Height);
+            var indent_start = GetContentStart (control, item);
+            var glyph_area = new Rectangle (indent_start, item.Bounds.Top, control.LogicalToDeviceUnits (GLYPH_SIZE), item.Bounds.Height);
             var glyph_bounds = DrawingExtensions.CenterSquare (glyph_area, control.LogicalToDeviceUnits (GLYPH_SIZE));
 
             glyph_bounds.Width = control.LogicalToDeviceUnits (GLYPH_SIZE);
 
             return glyph_bounds;
+        }
+
+        /// <summary>
+        /// Gets the bounds of the checkbox.
+        /// </summary>
+        public virtual Rectangle GetCheckBoxBounds (TreeView control, TreeViewItem item)
+        {
+            if (!control.CheckBoxes)
+                return Rectangle.Empty;
+
+            var indent_start = GetIndentStart (control, item);
+            var checkbox_size = control.LogicalToDeviceUnits (CHECKBOX_SIZE);
+            var checkbox_area = new Rectangle (indent_start, item.Bounds.Top, checkbox_size, item.Bounds.Height);
+
+            return DrawingExtensions.CenterSquare (checkbox_area, checkbox_size);
         }
 
         /// <summary>
@@ -101,33 +114,36 @@ namespace Modern.Forms.Renderers
             if (!control.ShowItemImages || item.Image is null)
                 return Rectangle.Empty;
 
-            var left_index = control.ShowDropdownGlyph ? GetGlyphBounds (control, item).Right : GetIndentStart (control, item);
+            var left_index = control.ShowDropdownGlyph ? GetGlyphBounds (control, item).Right : GetContentStart (control, item);
             var image_area = new Rectangle (left_index, item.Bounds.Top, item.Bounds.Height, item.Bounds.Height);
 
             return DrawingExtensions.CenterSquare (image_area, e.LogicalToDeviceUnits (IMAGE_SIZE));
         }
 
-        /// <summary>
-        /// Gets the bounds of the item text.
-        /// </summary>
         protected virtual Rectangle GetTextBounds (TreeView control, TreeViewItem item, PaintEventArgs e)
         {
             var show_glyph = control.ShowDropdownGlyph;
             var show_image = control.ShowItemImages;
 
             if (!show_glyph && !show_image)
-                return new Rectangle (GetIndentStart (control, item), item.Bounds.Top, item.Bounds.Width - GetIndentStart (control, item), item.Bounds.Height);
+                return new Rectangle (GetContentStart (control, item), item.Bounds.Top, item.Bounds.Width - GetContentStart (control, item), item.Bounds.Height);
 
-            // One of these will be valid because we handled the other case above
             var padding = e.LogicalToDeviceUnits (6);
             var used_bounds = show_image && item.Image is not null ? GetImageBounds (control, item, e) : GetGlyphBounds (control, item);
             return new Rectangle (used_bounds.Right + padding, item.Bounds.Top, item.Bounds.Right - used_bounds.Right - padding, item.Bounds.Height);
         }
 
-        /// <summary>
-        /// Gets the left start of the item bounds, accounting for indent level.
-        /// </summary>
         protected virtual int GetIndentStart (TreeView control, TreeViewItem item) => item.Bounds.Left + item.IndentLevel * control.LogicalToDeviceUnits (INDENT_SIZE) + 2;
+
+        protected virtual int GetContentStart (TreeView control, TreeViewItem item)
+        {
+            var start = GetIndentStart (control, item);
+
+            if (control.CheckBoxes)
+                start += control.LogicalToDeviceUnits (CHECKBOX_SIZE) + control.LogicalToDeviceUnits (4);
+
+            return start;
+        }
 
         /// <summary>
         /// Gets if the item should draw a dropdown glyph.
