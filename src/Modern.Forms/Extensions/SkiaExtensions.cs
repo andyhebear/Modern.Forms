@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Runtime.Versioning;
 using SkiaSharp;
 
@@ -17,6 +17,8 @@ namespace Modern.Forms
                     0,     0,     0,     1, 0
                 ]);
         private static readonly float[] focus_dash_intervals = [1f, 1f];
+
+        public static SKColorFilter GetDisabledColorFilter () => disabled_matrix;
 
         /// <summary>
         /// Clips a canvas to the specified rectangle.
