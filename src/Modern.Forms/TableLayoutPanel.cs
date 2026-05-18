@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -21,7 +21,23 @@ namespace Modern.Forms;
 public class TableLayoutPanel : Panel, IExtenderProvider
 {
     private readonly TableLayoutSettings _tableLayoutSettings;
-    //private static readonly object s_eventCellPaint = new object ();
+    private static readonly object s_eventCellPaint = new object ();
+
+    /// <summary>
+    /// Raised when a cell needs to be painted.
+    /// </summary>
+    public event EventHandler<TableLayoutCellPaintEventArgs>? CellPaint {
+        add => Events.AddHandler (s_eventCellPaint, value);
+        remove => Events.RemoveHandler (s_eventCellPaint, value);
+    }
+
+    /// <summary>
+    /// Raises the CellPaint event.
+    /// </summary>
+    protected virtual void OnCellPaint (TableLayoutCellPaintEventArgs e)
+    {
+        (Events[s_eventCellPaint] as EventHandler<TableLayoutCellPaintEventArgs>)?.Invoke (this, e);
+    }
 
     /// <summary>
     /// Initializes a new instance of the TableLayoutPanel class.
@@ -72,27 +88,18 @@ public class TableLayoutPanel : Panel, IExtenderProvider
     //    }
     //}
 
-    //[DefaultValue (TableLayoutPanelCellBorderStyle.None)]
-    //[Localizable (true)]
-    //public TableLayoutPanelCellBorderStyle CellBorderStyle {
-    //    get { return _tableLayoutSettings.CellBorderStyle; }
-    //    set {
-    //        _tableLayoutSettings.CellBorderStyle = value;
+    [DefaultValue (TableLayoutPanelCellBorderStyle.None)]
+    [Localizable (true)]
+    public TableLayoutPanelCellBorderStyle CellBorderStyle {
+        get => _tableLayoutSettings.CellBorderStyle;
+        set {
+            _tableLayoutSettings.CellBorderStyle = value;
+            Invalidate ();
+            Debug.Assert (CellBorderStyle == value, "CellBorderStyle should be the same as we set it");
+        }
+    }
 
-    //        // PERF: don't turn on ResizeRedraw unless we know we need it.
-    //        //if (value != TableLayoutPanelCellBorderStyle.None)
-    //        //{
-    //        //    SetStyle(ControlStyles.ResizeRedraw, true);
-    //        //}
-
-    //        Invalidate ();
-    //        Debug.Assert (CellBorderStyle == value, "CellBorderStyle should be the same as we set it");
-    //    }
-    //}
-
-    //private int CellBorderWidth {
-    //    get { return _tableLayoutSettings.CellBorderWidth; }
-    //}
+    private int CellBorderWidth => _tableLayoutSettings.CellBorderWidth;
 
     /// <summary>
     /// Gets the collection of controls contained by the control.
@@ -310,189 +317,6 @@ public class TableLayoutPanel : Panel, IExtenderProvider
     }
     #endregion
 
-    #region PaintCode
-    ///// <summary>
-    ///// Raised when a cell needs to be painted.
-    ///// </summary>
-    //public event EventHandler<TableLayoutCellPaintEventArgs> CellPaint {
-    //    add => Events.AddHandler (s_eventCellPaint, value);
-    //    remove => Events.RemoveHandler (s_eventCellPaint, value);
-    //}
-
-    ///// <summary>
-    /////  When a layout fires, make sure we're painting all of our
-    /////  cell borders.
-    ///// </summary>
-    //[EditorBrowsable (EditorBrowsableState.Advanced)]
-    //protected override void OnLayout (LayoutEventArgs levent)
-    //{
-    //    base.OnLayout (levent);
-    //    Invalidate ();
-    //}
-
-    ///// <summary>
-    ///// Raises the CellPaint event.
-    ///// </summary>
-    //protected virtual void OnCellPaint (TableLayoutCellPaintEventArgs e)
-    //{
-    //    (Events[s_eventCellPaint] as EventHandler<TableLayoutCellPaintEventArgs>)?.Invoke (this, e);
-    //}
-
-    // TODO: Custom Cell Paint
-    //protected override void OnPaintBackground(PaintEventArgs e)
-    //{
-    //    base.OnPaintBackground(e);
-
-    //    // paint borderstyles on top of the background image in WM_ERASEBKGND
-
-    //    int cellBorderWidth = CellBorderWidth;
-    //    TableLayout.ContainerInfo containerInfo = TableLayout.GetContainerInfo(this);
-    //    TableLayout.Strip[] colStrips = containerInfo.Columns;
-    //    TableLayout.Strip[] rowStrips = containerInfo.Rows;
-    //    TableLayoutPanelCellBorderStyle cellBorderStyle = CellBorderStyle;
-
-    //    if (colStrips is null || rowStrips is null)
-    //    {
-    //        return;
-    //    }
-
-    //    int cols = colStrips.Length;
-    //    int rows = rowStrips.Length;
-
-    //    int totalColumnWidths = 0, totalColumnHeights = 0;
-
-    //    Rectangle displayRect = DisplayRectangle;
-    //    Rectangle clipRect = e.ClipRectangle;
-
-    //    Graphics g = e.GraphicsInternal;
-
-    //    // Leave the space for the border
-    //    int startx;
-    //    bool isRTL = RightToLeft == RightToLeft.Yes;
-    //    if (isRTL)
-    //    {
-    //        startx = displayRect.Right - (cellBorderWidth / 2);
-    //    }
-    //    else
-    //    {
-    //        startx = displayRect.X + (cellBorderWidth / 2);
-    //    }
-
-    //    for (int i = 0; i < cols; i++)
-    //    {
-    //        int starty = displayRect.Y + (cellBorderWidth / 2);
-
-    //        if (isRTL)
-    //        {
-    //            startx -= colStrips[i].MinSize;
-    //        }
-
-    //        for (int j = 0; j < rows; j++)
-    //        {
-    //            Rectangle outsideCellBounds = new Rectangle(
-    //                startx,
-    //                starty,
-    //                colStrips[i].MinSize,
-    //                rowStrips[j].MinSize);
-
-    //            Rectangle insideCellBounds = new Rectangle(
-    //                outsideCellBounds.X + (cellBorderWidth + 1) / 2,
-    //                outsideCellBounds.Y + (cellBorderWidth + 1) / 2,
-    //                outsideCellBounds.Width - (cellBorderWidth + 1) / 2,
-    //                outsideCellBounds.Height - (cellBorderWidth + 1) / 2);
-
-    //            if (clipRect.IntersectsWith(insideCellBounds))
-    //            {
-    //                // First, call user's painting code
-    //                using (var pcea = new TableLayoutCellPaintEventArgs(e, clipRect, insideCellBounds, i, j))
-    //                {
-    //                    OnCellPaint(pcea);
-    //                    if (!((IGraphicsHdcProvider)pcea).IsGraphicsStateClean)
-    //                    {
-    //                        // The Graphics object got touched, hit the public property on our original args
-    //                        // to mark it as dirty as well.
-
-    //                        g = e.Graphics;
-    //                    }
-    //                }
-
-    //                // Paint the table border on top.
-    //                ControlPaint.PaintTableCellBorder(cellBorderStyle, g, outsideCellBounds);
-    //            }
-
-    //            starty += rowStrips[j].MinSize;
-
-    //            // Only sum this up once...
-    //            if (i == 0)
-    //            {
-    //                totalColumnHeights += rowStrips[j].MinSize;
-    //            }
-    //        }
-
-    //        if (!isRTL)
-    //        {
-    //            startx += colStrips[i].MinSize;
-    //        }
-
-    //        totalColumnWidths += colStrips[i].MinSize;
-    //    }
-
-    //    if (!HScroll && !VScroll && cellBorderStyle != TableLayoutPanelCellBorderStyle.None)
-    //    {
-    //        // Paint the border of the table if we are not auto scrolling.
-
-    //        Rectangle tableBounds = new Rectangle(
-    //            cellBorderWidth / 2 + displayRect.X,
-    //            cellBorderWidth / 2 + displayRect.Y,
-    //            displayRect.Width - cellBorderWidth,
-    //            displayRect.Height - cellBorderWidth);
-
-    //        // If the borderStyle is Inset or Outset, we can only paint the lower bottom half since otherwise we
-    //        // will have 1 pixel loss at the border.
-    //        if (cellBorderStyle == TableLayoutPanelCellBorderStyle.Inset)
-    //        {
-    //            g.DrawLine(
-    //                SystemPens.ControlDark,
-    //                tableBounds.Right,
-    //                tableBounds.Y,
-    //                tableBounds.Right,
-    //                tableBounds.Bottom);
-
-    //            g.DrawLine(
-    //                SystemPens.ControlDark,
-    //                tableBounds.X,
-    //                tableBounds.Y + tableBounds.Height - 1,
-    //                tableBounds.X + tableBounds.Width - 1,
-    //                tableBounds.Y + tableBounds.Height - 1);
-    //        }
-    //        else if (cellBorderStyle == TableLayoutPanelCellBorderStyle.Outset)
-    //        {
-    //            g.DrawLine(
-    //                SystemPens.Window,
-    //                tableBounds.X + tableBounds.Width - 1,
-    //                tableBounds.Y,
-    //                tableBounds.X + tableBounds.Width - 1,
-    //                tableBounds.Y + tableBounds.Height - 1);
-    //            g.DrawLine(
-    //                SystemPens.Window,
-    //                tableBounds.X,
-    //                tableBounds.Y + tableBounds.Height - 1,
-    //                tableBounds.X + tableBounds.Width - 1,
-    //                tableBounds.Y + tableBounds.Height - 1);
-    //        }
-    //        else
-    //        {
-    //            ControlPaint.PaintTableCellBorder(cellBorderStyle, g, tableBounds);
-    //        }
-
-    //        ControlPaint.PaintTableControlBorder(cellBorderStyle, g, displayRect);
-    //    }
-    //    else
-    //    {
-    //        ControlPaint.PaintTableControlBorder(cellBorderStyle, g, displayRect);
-    //    }
-    //}
-
     /// <inheritdoc/>
     [EditorBrowsable (EditorBrowsableState.Never)]
     protected override void ScaleCore (float dx, float dy)
@@ -557,5 +381,4 @@ public class TableLayoutPanel : Panel, IExtenderProvider
             }
         }
     }
-    #endregion
 }
