@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using Modern.Forms.Renderers;
 using SkiaSharp;
 
@@ -9,6 +9,11 @@ namespace Modern.Forms
     /// </summary>
     public class FormTitleBar : Control
     {
+        /// <summary>
+        /// TitleBar 的默认高度（像素），供设计器等外部代码引用。
+        /// </summary>
+        public const int DefaultTitleBarHeight = 34;
+
         private readonly TitleBarButton minimize_button;
         private readonly TitleBarButton maximize_button;
         private readonly TitleBarButton close_button;
@@ -70,7 +75,6 @@ namespace Modern.Forms
             set {
                 maximize_button.Visible = value;
                 UpdateMaximizeButtonGlyph ();
-                Invalidate (); // TODO: Shouldn't be necessary, should automatically be triggered
             }
         }
 
@@ -81,7 +85,6 @@ namespace Modern.Forms
             get => minimize_button.Visible;
             set {
                 minimize_button.Visible = value;
-                Invalidate (); // TODO: Shouldn't be necessary, should automatically be triggered
             }
         }
 
@@ -145,7 +148,6 @@ namespace Modern.Forms
                 if (show_image != value) {
                     show_image = value;
                     form_image.Visible = value && form_image.Image is not null;
-                    Invalidate (); // TODO: Shouldn't be required
                 }
             }
         }
