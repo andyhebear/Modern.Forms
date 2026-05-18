@@ -1,83 +1,64 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 
 namespace Modern.Forms
 {
-    /// <summary>
-    /// Defines the style of a control.
-    /// </summary>
     public class ControlStyle
     {
         internal readonly ControlStyle? _parent;
 
-        /// <summary>
-        /// Initializes a new instance of the ControlStyle class.  This constructor is
-        /// generally used by the static DefaultStyle property.
-        /// </summary>
+        public event EventHandler? Changed;
+
         public ControlStyle (ControlStyle? parent, Action<ControlStyle> setDefaults)
         {
             _parent = parent;
 
             Border = new BorderStyle (parent?.Border);
+            Border.Changed += (s, e) => OnChanged ();
 
             setDefaults (this);
 
-            Theme.ThemeChanged += (o, e) => setDefaults (this);
+            Theme.ThemeChanged += (o, e) => { setDefaults (this); OnChanged (); };
         }
 
-        /// <summary>
-        /// Initializes a new instance of the ControlStyle class.  This constructor is
-        /// generally used by the instance Style property.
-        /// </summary>
         public ControlStyle (ControlStyle parent)
         {
             _parent = parent;
 
             Border = new BorderStyle (parent?.Border);
+            Border.Changed += (s, e) => OnChanged ();
         }
 
-        /// <summary>
-        /// Gets or sets the background color.
-        /// </summary>
-        public SKColor? BackgroundColor { get; set; }
+        SKColor? _backgroundColor;
+        public SKColor? BackgroundColor {
+            get => _backgroundColor;
+            set { if (_backgroundColor != value) { _backgroundColor = value; OnChanged (); } }
+        }
 
-        /// <summary>
-        /// Provides access to border style properties.
-        /// </summary>
         public BorderStyle Border { get; }
 
-        /// <summary>
-        /// Gets or sets the font.
-        /// </summary>
-        public SKTypeface? Font { get; set; }
+        SKTypeface? _font;
+        public SKTypeface? Font {
+            get => _font;
+            set { if (_font != value) { _font = value; OnChanged (); } }
+        }
 
-        /// <summary>
-        /// Gets or sets the font size.
-        /// </summary>
-        public int? FontSize { get; set; }
+        int? _fontSize;
+        public int? FontSize {
+            get => _fontSize;
+            set { if (_fontSize != value) { _fontSize = value; OnChanged (); } }
+        }
 
-        /// <summary>
-        /// Gets or sets the foreground color.
-        /// </summary>
-        public SKColor? ForegroundColor { get; set; }
+        SKColor? _foregroundColor;
+        public SKColor? ForegroundColor {
+            get => _foregroundColor;
+            set { if (_foregroundColor != value) { _foregroundColor = value; OnChanged (); } }
+        }
 
-        /// <summary>
-        /// Gets the computed background color.
-        /// </summary>
         public SKColor GetBackgroundColor () => BackgroundColor ?? _parent?.GetBackgroundColor () ?? Theme.ControlMidColor;
-
-        /// <summary>
-        /// Gets the computed font.
-        /// </summary>
         public SKTypeface GetFont () => Font ?? _parent?.GetFont () ?? Theme.UIFont;
-
-        /// <summary>
-        /// Gets the computed font size.
-        /// </summary>
         public int GetFontSize () => FontSize ?? _parent?.GetFontSize () ?? Theme.FontSize;
-
-        /// <summary>
-        /// Gets the computed foreground color.
-        /// </summary>
         public SKColor GetForegroundColor () => ForegroundColor ?? _parent?.GetForegroundColor () ?? Theme.ForegroundColor;
+
+        protected virtual void OnChanged () => Changed?.Invoke (this, EventArgs.Empty);
     }
 }
