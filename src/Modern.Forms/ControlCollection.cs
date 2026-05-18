@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -188,10 +188,14 @@ public partial class Control
             }
         }
 
-        internal IEnumerable<Control> GetAllControls (bool includeImplicit = true)
+        internal List<Control> GetAllControls (bool includeImplicit = true)
         {
-            if (includeImplicit)
-                return control_list.Concat (implicit_control_list);
+            if (includeImplicit && implicit_control_list.Count > 0) {
+                var result = new List<Control> (control_list.Count + implicit_control_list.Count);
+                result.AddRange (control_list);
+                result.AddRange (implicit_control_list);
+                return result;
+            }
 
             return control_list;
         }
@@ -370,25 +374,20 @@ public partial class Control
         /// </summary>
         public virtual bool Remove (Control item)
         {
-            // Sanity check parameter
             if (item is null)
-                return false;     // Don't do anything
+                return false;
 
             if (item.Parent == Owner) {
 
-                // Remove the control from the internal control array
                 control_list.Remove (item);
                 item.AssignParent (null);
 
                 LayoutTransaction.DoLayout (Owner, item, PropertyNames.Parent);
                 Owner.OnControlRemoved (new EventArgs<Control> (item));
-
-                // ContainerControl needs to see it needs to find a new ActiveControl. TODO
-                //if (Owner.GetContainerControl () is ContainerControl cc)
-                //    cc.AfterControlRemoved (value, Owner);
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>
