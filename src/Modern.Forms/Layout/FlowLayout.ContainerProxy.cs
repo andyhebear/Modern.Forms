@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -35,11 +35,11 @@ internal partial class FlowLayout
         public ContainerProxy (IArrangedElement container)
         {
             _container = container;
-            _isContainerRTL = false;
 
-            // TODO: RTL
-            if (_container is Control)
-                _isContainerRTL = false;// ((Control)(_container)).RightToLeft == RightToLeft.Yes;
+            if (_container is Control control)
+                _isContainerRTL = control.RightToLeft == RightToLeft.Yes;
+            else
+                _isContainerRTL = false;
         }
 
         public virtual Rectangle Bounds {
