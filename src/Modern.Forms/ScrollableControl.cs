@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using Modern.Forms.Layout;
 using Modern.Forms.Renderers;
 
@@ -9,6 +9,8 @@ namespace Modern.Forms
     /// </summary>
     public class ScrollableControl : Control
     {
+        internal override bool IsContainerControl => true;
+
         private readonly HorizontalScrollBar hscrollbar;
         private readonly VerticalScrollBar vscrollbar;
         private readonly SizeGrip sizegrip;
@@ -18,6 +20,9 @@ namespace Modern.Forms
         private Size auto_scroll_min_size = Size.Empty;
         private Size auto_scroll_margin = Size.Empty;
         private bool auto_scroll;
+
+        private readonly EventHandler size_changed_handler;
+        private readonly EventHandler visible_changed_handler;
 
         /// <summary>
         /// Initializes a new instance of the ScrollableControl class.
@@ -42,8 +47,8 @@ namespace Modern.Forms
                 Visible = false
             });
 
-            SizeChanged += (o, e) => Recalculate (true);
-            VisibleChanged += (o, e) => Recalculate (true);
+            SizeChanged += size_changed_handler = (o, e) => Recalculate (true);
+            VisibleChanged += visible_changed_handler = (o, e) => Recalculate (true);
         }
 
         /// <summary>
@@ -64,6 +69,53 @@ namespace Modern.Forms
             }
         }
 
+        /// <summary>
+        /// Gets or sets the minimum size of the auto-scroll area.
+        /// </summary>
+        public Size AutoScrollMinSize {
+            get => auto_scroll_min_size;
+            set {
+                if (auto_scroll_min_size != value) {
+                    auto_scroll_min_size = value;
+                    PerformLayout (this, nameof (AutoScrollMinSize));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the margin around the controls during auto scroll.
+        /// </summary>
+        public Size AutoScrollMargin {
+            get => auto_scroll_margin;
+            set {
+                if (auto_scroll_margin != value) {
+                    auto_scroll_margin = value;
+                    PerformLayout (this, nameof (AutoScrollMargin));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the auto scroll position.
+        /// </summary>
+        public Point AutoScrollPosition {
+            get => new Point (-scroll_position.X, -scroll_position.Y);
+            set {
+                var x = -value.X;
+                var y = -value.Y;
+
+                if (x != scroll_position.X || y != scroll_position.Y) {
+                    ScrollWindow (x - scroll_position.X, y - scroll_position.Y);
+
+                    if (hscrollbar.Visible)
+                        hscrollbar.Value = Math.Clamp (x, hscrollbar.Minimum, hscrollbar.Maximum);
+
+                    if (vscrollbar.Visible)
+                        vscrollbar.Value = Math.Clamp (y, vscrollbar.Minimum, vscrollbar.Maximum);
+                }
+            }
+        }
+
         // Calculates and sets the current canvas size.
         private void CalculateCanvasSize ()
         {
@@ -72,7 +124,9 @@ namespace Modern.Forms
             var extra_width = hscrollbar.Value + Padding.Right;
             var extra_height = vscrollbar.Value + Padding.Bottom;
 
-            foreach (var c in Controls) {
+            var controls_snapshot = Controls.ToArray ();
+
+            foreach (var c in controls_snapshot) {
                 if (c.Dock == DockStyle.Right)
                     extra_width += c.Width;
                 else if (c.Dock == DockStyle.Bottom)
@@ -84,7 +138,7 @@ namespace Modern.Forms
                 height = auto_scroll_min_size.Height;
             }
 
-            foreach (var c in Controls) {
+            foreach (var c in controls_snapshot) {
                 switch (c.Dock) {
                     case DockStyle.Left:
                         width = Math.Max (width, c.Right + extra_width);
@@ -116,7 +170,6 @@ namespace Modern.Forms
         /// <inheritdoc/>
         public override Rectangle DisplayRectangle {
             get {
-                // A ScrollableControl DisplayRectangle includes Padding, while a normal Control does not.
                 var rect = base.DisplayRectangle;
 
                 if (hscrollbar.Visible)
@@ -125,8 +178,10 @@ namespace Modern.Forms
                 if (vscrollbar.Visible)
                     rect.Width -= vscrollbar.Width;
 
-                // TODO: Scale padding?
-                return LayoutUtils.DeflateRect (rect, Padding);
+                rect.X -= scroll_position.X;
+                rect.Y -= scroll_position.Y;
+
+                return rect;
             }
         }
 
@@ -170,7 +225,7 @@ namespace Modern.Forms
         private void Recalculate (bool doLayout)
         {
             var canvas = canvas_size;
-            var client = Bounds;
+            var client = DisplayRectangle;
 
             canvas.Width += auto_scroll_margin.Width;
             canvas.Height += auto_scroll_margin.Height;
@@ -235,14 +290,14 @@ namespace Modern.Forms
                 if (vscrollbar.Visible)
                     ScrollWindow (0, -scroll_position.Y);
 
-                scroll_position.X = 0;
+                scroll_position.Y = 0;
             }
 
             SuspendLayout ();
 
             var sizegrip_visible = hscroll_visible && vscroll_visible;
 
-            hscrollbar.SetBounds (0, client.Height - bar_size, sizegrip_visible ? Bounds.Width - bar_size : Bounds.Height, bar_size);
+            hscrollbar.SetBounds (0, client.Height - bar_size, sizegrip_visible ? Bounds.Width - bar_size : Bounds.Width, bar_size);
             hscrollbar.Visible = hscroll_visible;
 
             vscrollbar.SetBounds (client.Width - bar_size, 0, bar_size, sizegrip_visible ? Bounds.Height - bar_size : Bounds.Height);
@@ -267,8 +322,14 @@ namespace Modern.Forms
 
             SuspendLayout ();
 
-            foreach (var c in Controls)
+            var controls_snapshot = Controls.ToArray ();
+
+            foreach (var c in controls_snapshot) {
+                if (c == hscrollbar || c == vscrollbar || c == sizegrip)
+                    continue;
+
                 c.Location = new Point (c.Left - xOffset, c.Top - yOffset);
+            }
 
             scroll_position.Offset (xOffset, yOffset);
 
@@ -279,5 +340,15 @@ namespace Modern.Forms
         /// Provides access to the properties of the vertical scrollbar.
         /// </summary>
         public ScrollProperties VerticalScrollProperties => new ScrollProperties (vscrollbar);
+
+        protected override void Dispose (bool disposing)
+        {
+            if (!disposedValue) {
+                SizeChanged -= size_changed_handler;
+                VisibleChanged -= visible_changed_handler;
+            }
+
+            base.Dispose (disposing);
+        }
     }
 }
