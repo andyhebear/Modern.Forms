@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -79,6 +79,7 @@ public partial class Control
     }
 
     /// <summary>
+    /// 不允许组合
     ///  The dock property. The dock property controls to which edge
     ///  of the container this control is docked to. For example, when docked to
     ///  the top of the container, the control will be displayed flush at the
@@ -153,7 +154,7 @@ public partial class Control
         return CommonProperties.GetSpecifiedBounds (this).Size;
     }
 
-    IEnumerable<Control> IArrangedElement.Children => Controls.GetAllControls (true);
+    IList<Control> IArrangedElement.Children => Controls.GetAllControls (true);
 
     IArrangedElement? IArrangedElement.Container {
         get {
@@ -249,8 +250,7 @@ public partial class Control
 
     private static bool IsFocusManagingContainerControl (Control ctl)
     {
-        // TODO probably
-        return false;// ((ctl._controlStyle & ControlStyles.ContainerControl) == ControlStyles.ContainerControl && ctl is IContainerControl);
+        return ctl is IContainerControl;
     }
 
     // Public because this is interesting for ControlDesigners.
